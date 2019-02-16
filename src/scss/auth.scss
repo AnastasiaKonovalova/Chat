@@ -1,0 +1,46 @@
+// @import url(../scss/variables.scss);
+
+.auth__container{
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(150, 150, 150, 0.5);
+}
+
+.auth__content{
+    background-color: $light-gray;
+    padding: 20px 10px 10px 10px;
+    border-radius: 10px;
+    margin: 10px auto;
+}
+
+.auth__header{
+    margin-bottom: 10px;
+}
+
+.auth__form{
+    background-color: $white;
+    padding: 15px 10px 10px 10px;
+    border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+}
+
+.auth__inputs{
+    margin-bottom: 10px;
+}
+
+.auth__input{
+    width: 100%;
+    padding: 7px;
+    border-color: $light-gray;
+    border-radius: 25px;
+    margin-bottom: 10px;
+}

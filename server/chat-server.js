@@ -32,22 +32,25 @@ console.log('сервер запущен');
 
 //     return result;
 // }
+const writeAsyncImg = (id, data) => {
+    fs.writeFile(`./img/${id}_${photoCount[id]}img.jpeg`, data, (err) => {
+        console.log( 'write file error', err);
+        users[id].photo = `../server/img/${id}_${photoCount[id]}img.jpeg`;
+        const newMessage = {
+            type: 'newUserImg',
+            users: users,
+            messages: messages
+        };
+        
+        Object.keys(clients).forEach(key => clients[key].send(JSON.stringify(newMessage)))
+    })
+}
 
 const unlinkOldImg = (id, data) => {
     fs.unlink(`./img/${id}_${photoCount[id]}img.jpeg`, err => {
         console.log('fs.unlink error', err);
         photoCount[id] += 1;
-        fs.writeFile(`./img/${id}_${photoCount[id]}img.jpeg`, data, (err) => {
-            console.log( 'write file error', err);
-            users[id].photo = `../server/img/${id}_${photoCount[id]}img.jpeg`;
-            const newMessage = {
-                type: 'newUserImg',
-                users: users,
-                messages: messages
-            };
-
-            Object.keys(clients).forEach(key => clients[key].send(JSON.stringify(newMessage)))
-        })
+        writeAsyncImg(id, data)
     })
 }
 
@@ -107,25 +110,11 @@ webSocketServer.on('connection', function(ws) {
                 Object.keys(clients).forEach(key => clients[key].send('Произошла ошибка' + error))
             }
         } else {
-            console.log('photoCount', photoCount)
             if (fs.existsSync(`./img/${userID}_${photoCount[userID]}img.jpeg`)) {
-                console.log('fs.existsSync photoCount', photoCount)
-                console.log('fs.existsSync', fs.existsSync(`./img/${userID}_${photoCount[userID]}img.jpeg`))
                 unlinkOldImg(userID, message)
             } else {
-
-            console.log('first img')
                 photoCount[userID] = 0;
-                fs.writeFile(`./img/${userID}_${++photoCount[userID]}img.jpeg`, message, (err) => {
-                    console.log( 'write file error', err);
-                    users[userID].photo = `../server/img/${userID}_${photoCount[userID]}img.jpeg`;
-                    const newMessage = {
-                        type: 'newUserImg',
-                        users: users,
-                        messages: messages
-                    };
-                    Object.keys(clients).forEach(key => clients[key].send(JSON.stringify(newMessage)))
-                })
+                writeAsyncImg(userID, message)
             }
         }
     });

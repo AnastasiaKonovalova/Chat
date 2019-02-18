@@ -155,17 +155,19 @@ class App {
 
     renderMessages(message, users) {
         const { time, text, userID } = message;
-        // console.log('renderMessages users', users, userID, users[userID])
-        const messageHTML = getMessageHTML({ 
-            style: `background: url(${users[userID].photo}) 50% 50%/cover no-repeat`,
-            time: time, 
-            text: text, 
-            fullName: users[userID].fullName
-        });
-        const li = document.createElement('li');
-    
-        li.innerHTML = messageHTML;
-        messageList.appendChild(li);
+        if (users[userID]) {
+            // console.log('renderMessages users', users, userID, users[userID])
+            const messageHTML = getMessageHTML({ 
+                style: `background: url(${users[userID].photo}) 50% 50%/cover no-repeat`,
+                time: time, 
+                text: text, 
+                fullName: users[userID].fullName
+            });
+            const li = document.createElement('li');
+        
+            li.innerHTML = messageHTML;
+            messageList.appendChild(li);
+        }
     }
 
     renderLastMessage(message) {
@@ -236,7 +238,7 @@ class App {
                 
                     case 'usersList': 
                         // console.log('usersList act messages, users', messages, users)
-                        if (messages && users) {
+                        if (messages && users[this.userID] && users[this.userID].isAuthorized === true) {
                             usersList.innerHTML = '';
                             this.renderUsers(users)
                             if (messages.length > 0) {
@@ -247,7 +249,15 @@ class App {
                             }
                         }
                         if (authorizedUser && this.userID === authorizedUser.id) {
+
                             asideUserPic.style.background = `url(${authorizedUser.photo}) 50% 50%/cover no-repeat`;
+                        }
+                        break;
+
+                    case 'unauthorize':
+                        if (users[this.userID] && users[this.userID].isAuthorized === true) {
+                            usersList.innerHTML = '';
+                            this.renderUsers(users)
                         }
                         break;
 
@@ -296,6 +306,7 @@ const sendMessage = () => {
 
     const outMessage = {
         type: 'message',
+        userID: app.userID,
         text: messageInput.value
     };
 

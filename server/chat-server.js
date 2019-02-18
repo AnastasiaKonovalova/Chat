@@ -5,7 +5,6 @@ const path = require('path');
 const clients = {};
 const users = {};
 const messages = [];
-let i = 0;
 const photoCount = {};
 
 const webSocketServer = new WebSocketServer.Server({
@@ -41,7 +40,7 @@ const writeAsyncImg = (id, data) => {
             users: users,
             messages: messages
         };
-        
+
         Object.keys(clients).forEach(key => clients[key].send(JSON.stringify(newMessage)))
     })
 }

@@ -155,8 +155,8 @@ class App {
 
     renderMessages(message, users) {
         const { time, text, userID } = message;
+
         if (users[userID]) {
-            // console.log('renderMessages users', users, userID, users[userID])
             const messageHTML = getMessageHTML({ 
                 style: `background: url(${users[userID].photo}) 50% 50%/cover no-repeat`,
                 time: time, 
@@ -186,7 +186,6 @@ class App {
 
     renderUsers(users) {
         const authorizedUsers = Object.keys(users).filter(user => users[user].isAuthorized === true);
-        // console.log('renderUsers users, authorizedUsers', users, authorizedUsers)
 
         authorizedUsers.forEach(user => {
             const li = document.createElement('li');
@@ -232,12 +231,10 @@ class App {
             if (inMessage) {
                 switch (inMessage.type) {
                     case 'message': 
-                        // console.log('message act', inMessage)
                         this.renderLastMessage(inMessage)
                         break;
                 
                     case 'usersList': 
-                        // console.log('usersList act messages, users', messages, users)
                         if (messages && users[this.userID] && users[this.userID].isAuthorized === true) {
                             usersList.innerHTML = '';
                             this.renderUsers(users)
@@ -262,11 +259,8 @@ class App {
                         break;
 
                     case 'newUserImg':
-                    console.log('newUserImg messages, users, this.userID', messages, users, this.userID)
                         if (messages && users) {
                             asideUserPic.style.background = `url(${users[this.userID].photo}) 50% 50%/cover no-repeat`;
-                            console.log('asideUserPic.style.background', asideUserPic.style.background)
-
                             if (messages.length > 0) {
                                 messageList.innerHTML = '';
                                 messages.forEach(message => {
@@ -300,7 +294,6 @@ asideUserPic.addEventListener('click', e => {
 
 const sendMessage = () => {
     if (!app.getIsAuthorized || messageInput.value.trim() === '') {
-        // console.log('sendMessage values problem', app.getIsAuthorized, messageInput.value.trim())
         return
     };
 

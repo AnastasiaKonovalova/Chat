@@ -99,18 +99,20 @@ webSocketServer.on('connection', function(ws) {
                                 .catch(error => console.log('auth promise error', error))
                         } else {
                             socketMessage.user.photo = '../server/img/no_image_icon.png';
-                            fs.writeFile('./users.json', JSON.stringify({ [userID]: socketMessage.user }), err => err && console.log('fs writeFile users json error', err));
+                            fs.writeFile('./users.json', JSON.stringify({ [userID]: socketMessage.user }), err => err && console.log('auth fs writeFile users json error', err));
                             newMessage = {
                                 type: 'usersList',
-                                users: socketMessage.user,
+                                users: {
+                                    [socketMessage.user.id]: socketMessage.user
+                                },
                                 authorizedUser: socketMessage.user
                             };
                             getAsyncMessages()
-                                .then(resultMessages => newMessage.messages = resultMessages)
-                                .then(() => {
+                                .then(resultMessages => {
+                                    newMessage.messages = resultMessages;
                                     Object.keys(clients).forEach(key => clients[key].send(JSON.stringify(newMessage)))
                                 })
-                                .catch(error => console.log('promise JSON error', error))
+                                .catch(error => console.log('auth getAsyncMessages error', error))
                         }
                         break;
 

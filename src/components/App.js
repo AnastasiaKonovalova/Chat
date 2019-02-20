@@ -5,13 +5,20 @@ const usersCount = document.querySelector('#usersCount');
 const usersList = document.querySelector('#usersList');
 const messageList = document.querySelector('#messageList');
 const asideUserPic = document.querySelector('#asideUserPic');
+const asideUserName = document.querySelector('#asideUserName');
 
 export default class App {
     constructor () {
         this.isAuthorized = false;
         this.socket = new WebSocket('ws://localhost:8081');
-        this.handleEvents();
         this.userID;
+        // this.authEvent = new CustomEvent('authEvent', {
+        //     bubbles: true,
+        //     cancelable: true,
+        //     detail: { isAuthorized: false }
+        // });
+        this.handleEvents();
+
     }
 
     get IsAuthorized() {
@@ -106,6 +113,7 @@ export default class App {
                 
                     case 'usersList': 
                         if (messages && path([`${this.userID}`, 'isAuthorized'], users)) {
+                            asideUserName.textContent = authorizedUser.fullName;
                             usersList.innerHTML = '';
                             this.renderUsers(users)
                             if (messages.length > 0) {
@@ -137,6 +145,22 @@ export default class App {
                                     this.renderMessages(message, users)
                                 })
                             }
+                        }
+                        break;
+
+                    case 'error':
+                        console.log('error serverResponse', serverResponse);
+                        if (serverResponse.error === 'authError') {
+                            alert('Произошла ошибка: такой пользователь уже авторизован, введите другой ник');
+                            this.isAuthorized = false;
+                            this.userID = false;
+                            document.body.dispatchEvent(new CustomEvent('authEvent', {
+                                bubbles: true,
+                                cancelable: true,
+                                detail: { isAuthorized: false }
+                            }));
+                        } else {
+                            alert('Произошла ошибка: ' + JSON.stringify(serverResponse))
                         }
                         break;
                 

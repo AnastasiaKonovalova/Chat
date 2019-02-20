@@ -22,18 +22,18 @@ webSocketServer.on('connection', function(ws) {
     ws.on('message', function(message) {
         if (typeof(message) === typeof('')) {
             let socketMessage;
-            let newMessage;
+            let dataResponse;
             let user;
+            const errorResponse = {
+                type: 'error',
+                error: ''
+            };        
 
             try {
                 socketMessage = JSON.parse(message);
-            } catch (error) {
-                newMessage = {
-                    type: 'error',
-                    error: error
-                }
+            } catch (error) { 
                 console.log('ws on message JSON error', error)
-                helpers.sendDataToClients(clients, newMessage)
+                cases.handleError(error, clients)
             }
             if (socketMessage) {
                 switch (socketMessage.type) {
@@ -46,35 +46,45 @@ webSocketServer.on('connection', function(ws) {
                                 .then(resultResponse => {
                                     helpers.sendDataToClients(clients, resultResponse)
                                 })
-                                .catch(error => console.log('auth case handleNextAuth error', error))
+                                .catch(error => {
+                                    console.log('auth case handleNextAuth error, clients', error);
+                                    errorResponse.error = error.message;
+                                    clients[id].send(JSON.stringify(errorResponse))
+                                })
                         } else {
                             cases.handleFirstAuth(user, userID)
                                 .then(resultResponse => {
                                     helpers.sendDataToClients(clients, resultResponse)
                                 })
-                                .catch(error => console.log('auth case handleFirstAuth error', error))
+                                .catch(error => {
+                                    console.log('auth case handleFirstAuth error', error);
+                                    cases.handleError(error, clients)
+                                })
                         }
                         break;
     
                     case 'message': 
                         cases.handleMessageSending(socketMessage)
                             .then(resultResponse => {
-                                newMessage = resultResponse.newMessage;
+                                dataResponse = resultResponse.newMessage;
                                 authorizedClients = resultResponse.authorizedClients;
                                 authorizedClients.forEach(id => {
-                                    id && clients[id].send(JSON.stringify(newMessage))
+                                    id && clients[id].send(JSON.stringify(dataResponse))
                                 });
                             })
-                            .catch(error => console.log('message case handleMessageSending error', error))
+                            .catch(error => {
+                                console.log('message case handleMessageSending error', error);
+                                cases.handleError(error, clients)
+                            })
                         break;
     
                     default:
-                        newMessage = {
+                        dataResponse = {
                             type: 'unknown message',
                             data: socketMessage
                         };
                         console.log('unknown message', socketMessage);
-                        helpers.sendDataToClients(clients, newMessage)
+                        helpers.sendDataToClients(clients, dataResponse)
                 }
             }
         } else {

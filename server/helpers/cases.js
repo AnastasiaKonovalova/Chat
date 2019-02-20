@@ -3,6 +3,15 @@ const ramda = require('ramda');
 const helpers = require('./helpers');
 const defaultImgPath = '../server/img/no_image_icon.png';
 
+const handleError = (error, clients) => {
+    const errorResponse = {
+        type: 'error',
+        error: error.message
+    };
+
+    helpers.sendDataToClients(clients, errorResponse)
+}
+
 const handleUnauthorize = (socketID) => {
     return new Promise((resolve, reject) => {
         let resultUsers;
@@ -126,6 +135,10 @@ const handleNextAuth = (user, userID) => {
             .then(result => {
                 resultUsers = result;
                 user.photo = ramda.path( [`${userID}`, 'photo'], resultUsers ) || defaultImgPath;
+                if ( ramda.path( [`${userID}`, 'isAuthorized'], resultUsers ) ) {
+                    console.log('этот юзер уже авторизован');
+                    throw new Error('authError');
+                }
                 resultUsers[userID] = user;
                 response = {
                     type: 'usersList',
@@ -136,6 +149,7 @@ const handleNextAuth = (user, userID) => {
                 return helpers.getMessagesAsync()                
             })
             .then(resultMessages => {
+                console.log('getMessagesAsync')
                 response.messages = resultMessages;
                 fs.writeFile(
                     './users.json', 
@@ -146,11 +160,12 @@ const handleNextAuth = (user, userID) => {
             })
             .catch(error => {
                 console.log('handleNextAuth promise error', error)
-                reject(error)
+                reject(error);
             })
     })    
 }
 
+exports.handleError = handleError;
 exports.handleFirstAuth = handleFirstAuth;
 exports.handleNextAuth = handleNextAuth;
 exports.handleMessageSending = handleMessageSending;

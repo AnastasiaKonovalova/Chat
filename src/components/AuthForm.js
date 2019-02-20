@@ -1,5 +1,4 @@
 import getAuthHTML from '../templates/auth.hbs';
-const asideUserName = document.querySelector('#asideUserName');
 
 export default class AuthForm {
     constructor(app) {
@@ -51,7 +50,6 @@ export default class AuthForm {
                 this.app.socket.send(JSON.stringify(authMessage));
                 this.app.IsAuthorized = true;
                 this.app.userID = user.id;
-                asideUserName.textContent = user.fullName;
                 document.body.removeChild(this.root)
             }
         });    

@@ -15,6 +15,11 @@ if (!app.IsAuthorized) {
     authForm.render()
 }
 
+window.addEventListener('authEvent', event => {
+    console.log('authEvent', event)
+    authForm.render()
+})
+
 asideUserPic.addEventListener('click', () => {
     if (!app.IsAuthorized) {
         return

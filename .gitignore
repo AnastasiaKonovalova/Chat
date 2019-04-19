@@ -8,3 +8,8 @@ out/
 dist/
 node_modules/
 coverage/
+
+server/messages.json
+server/users.json
+server/img/*
+!no_image_icon.png

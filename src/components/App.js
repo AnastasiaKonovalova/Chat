@@ -8,25 +8,19 @@ const asideUserPic = document.querySelector('#asideUserPic');
 const asideUserName = document.querySelector('#asideUserName');
 
 export default class App {
-    constructor () {
+    constructor() {
         this.isAuthorized = false;
         this.socket = new WebSocket('ws://localhost:8081');
         this.userID;
-        // this.authEvent = new CustomEvent('authEvent', {
-        //     bubbles: true,
-        //     cancelable: true,
-        //     detail: { isAuthorized: false }
-        // });
         this.handleEvents();
-
     }
 
     get IsAuthorized() {
-        return this.isAuthorized
+        return this.isAuthorized;
     }
     set IsAuthorized(val) {
-        if (typeof(val) === typeof(true)) {
-            this.isAuthorized = val
+        if (typeof val === typeof true) {
+            this.isAuthorized = val;
         }
     }
 
@@ -34,14 +28,14 @@ export default class App {
         const { time, text, userID } = message;
 
         if (users[userID]) {
-            const messageHTML = getMessageHTML({ 
+            const messageHTML = getMessageHTML({
                 style: `background: url(${users[userID].photo}) 50% 50%/cover no-repeat`,
-                time: time, 
-                text: text, 
+                time: time,
+                text: text,
                 fullName: users[userID].fullName
             });
             const li = document.createElement('li');
-        
+
             li.innerHTML = messageHTML;
             messageList.appendChild(li);
         }
@@ -49,14 +43,14 @@ export default class App {
 
     renderLastMessage(message) {
         const { time, text, userID, users } = message;
-        const messageHTML = getMessageHTML({ 
+        const messageHTML = getMessageHTML({
             style: `background: url(${users[userID].photo}) 50% 50%/cover no-repeat`,
-            time: time, 
-            text: text, 
+            time: time,
+            text: text,
             fullName: users[userID].fullName
         });
         const li = document.createElement('li');
-    
+
         li.innerHTML = messageHTML;
         messageList.appendChild(li);
     }
@@ -70,25 +64,25 @@ export default class App {
             li.classList.add('users__item', 'user');
             li.textContent = users[user].fullName;
             usersList.appendChild(li);
-        })
+        });
         usersCount.textContent = `Участники (${authorizedUsers.length})`;
     }
 
     handleEvents() {
         window.addEventListener('beforeunload', () => {
-            console.log('beforeunload')
-            this.socket.close()
+            console.log('beforeunload');
+            this.socket.close();
         });
-        
+
         this.socket.onopen = () => {
             console.log('Соединение установлено.');
         };
-        
-        this.socket.onerror = (error) => {
+
+        this.socket.onerror = error => {
             console.log('Ошибка ' + error.message);
         };
-                
-        this.socket.onmessage = (e) => {
+
+        this.socket.onmessage = e => {
             let serverResponse;
             let messages;
             let users;
@@ -99,40 +93,40 @@ export default class App {
                 messages = serverResponse.messages;
                 users = serverResponse.users;
                 authorizedUser = serverResponse.authorizedUser;
-
             } catch (error) {
                 alert('Ошибка с JSON');
-                console.log('Ошибка с JSON' + error.message)
+                console.log('Ошибка с JSON' + error.message);
             }
 
             if (serverResponse) {
                 switch (serverResponse.type) {
-                    case 'message': 
-                        this.renderLastMessage(serverResponse)
+                    case 'message':
+                        this.renderLastMessage(serverResponse);
                         break;
-                
-                    case 'usersList': 
+
+                    case 'usersList':
                         if (messages && path([`${this.userID}`, 'isAuthorized'], users)) {
-                            asideUserName.textContent = authorizedUser.fullName;
+                            if (asideUserName.textContent === 'Добро пожаловать!') {
+                                asideUserName.textContent = authorizedUser.fullName;
+                            }
                             usersList.innerHTML = '';
-                            this.renderUsers(users)
+                            this.renderUsers(users);
                             if (messages.length > 0) {
                                 messageList.innerHTML = '';
                                 messages.forEach(message => {
-                                    this.renderMessages(message, users)
-                                })
+                                    this.renderMessages(message, users);
+                                });
                             }
                         }
                         if (authorizedUser && this.userID === authorizedUser.id) {
-
                             asideUserPic.style.background = `url(${authorizedUser.photo}) 50% 50%/cover no-repeat`;
                         }
                         break;
 
                     case 'unauthorize':
-                        if ( path([`${this.userID}`, 'isAuthorized'], users) ) {
+                        if (path([`${this.userID}`, 'isAuthorized'], users)) {
                             usersList.innerHTML = '';
-                            this.renderUsers(users)
+                            this.renderUsers(users);
                         }
                         break;
 
@@ -142,8 +136,8 @@ export default class App {
                             if (messages.length > 0) {
                                 messageList.innerHTML = '';
                                 messages.forEach(message => {
-                                    this.renderMessages(message, users)
-                                })
+                                    this.renderMessages(message, users);
+                                });
                             }
                         }
                         break;
@@ -154,21 +148,22 @@ export default class App {
                             alert('Произошла ошибка: такой пользователь уже авторизован, введите другой ник');
                             this.isAuthorized = false;
                             this.userID = false;
-                            document.body.dispatchEvent(new CustomEvent('authEvent', {
-                                bubbles: true,
-                                cancelable: true,
-                                detail: { isAuthorized: false }
-                            }));
+                            document.body.dispatchEvent(
+                                new CustomEvent('authEvent', {
+                                    bubbles: true,
+                                    cancelable: true,
+                                    detail: { isAuthorized: false }
+                                })
+                            );
                         } else {
-                            alert('Произошла ошибка: ' + JSON.stringify(serverResponse))
+                            alert('Произошла ошибка: ' + JSON.stringify(serverResponse));
                         }
                         break;
-                
-                    default: 
-                        console.log('unknown message.type from server', serverResponse)
+
+                    default:
+                        console.log('unknown message.type from server', serverResponse);
                 }
             }
         };
     }
-
 }

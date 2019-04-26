@@ -149,7 +149,6 @@ const handleNextAuth = (user, userID) => {
                 return helpers.getMessagesAsync()                
             })
             .then(resultMessages => {
-                console.log('getMessagesAsync')
                 response.messages = resultMessages;
                 fs.writeFile(
                     './users.json', 
